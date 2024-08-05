@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Book Library</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #6c5ce7;
+            color: white;
+            text-align: center;
+            padding: 1em 0;
+            margin-bottom: 20px;
+        }
+
+        .container {
+            width: 80%;
+            margin: 0 auto;
+        }
+
+        .form-container, .book-list, .history {
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            color: #6c5ce7;
+        }
+
+        input, select, button {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        button {
+            background-color: #6c5ce7;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #4e44c1;
+        }
+
+        .book {
+            border-bottom: 1px solid #ddd;
+            padding: 10px 0;
+        }
+
+        .book:last-child {
+            border-bottom: none;
+        }
+
+        .category {
+            font-style: italic;
+            color: #888;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>My Personal Book Library</h1>
+    </header>
+
+    <div class="container">
+        <div class="form-container">
+            <h2>Add a New Book</h2>
+            <input type="text" id="book-title" placeholder="Book Title" required>
+            <input type="text" id="book-author" placeholder="Author" required>
+            <select id="book-category" required>
+                <option value="">Select Category</option>
+                <option value="Fiction">Fiction</option>
+                <option value="Non-Fiction">Non-Fiction</option>
+                <option value="Romance">Romance</option>
+                <option value="Mystery">Mystery</option>
+                <option value="Thriller">Thriller</option>
+            </select>
+            <button onclick="addBook()">Add Book</button>
+        </div>
+
+        <div class="form-container">
+            <h2>Search Books</h2>
+            <input type="text" id="search-query" placeholder="Search by title, author or category" oninput="searchBooks()">
+        </div>
+
+        <div class="book-list">
+            <h2>Book List</h2>
+            <div id="books"></div>
+        </div>
+
+        <div class="history">
+            <h2>Borrowing History</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Book Title</th>
+                        <th>Borrowed Date</th>
+                        <th>Returned Date</th>
+                    </tr>
+                </thead>
+                <tbody id="history"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let books = [
+            { title: "The Great Gatsby", author: "F. Scott Fitzgerald", category: "Fiction" },
+            { title: "To Kill a Mockingbird", author: "Harper Lee", category: "Fiction" },
+            { title: "Pride and Prejudice", author: "Jane Austen", category: "Romance" },
+            { title: "The Da Vinci Code", author: "Dan Brown", category: "Mystery" },
+            { title: "Gone Girl", author: "Gillian Flynn", category: "Thriller" }
+        ];
+
+        let history = [
+            { title: "The Great Gatsby", borrowedAt: "2022-01-01", returnedAt: "2022-01-15" },
+            { title: "To Kill a Mockingbird", borrowedAt: "2022-02-01", returnedAt: "2022-02-20" }
+        ];
+
+        function addBook() {
+            const title = document.getElementById('book-title').value;
+            const author = document.getElementById('book-author').value;
+            const category = document.getElementById('book-category').value;
+
+            if (title && author && category) {
+                const book = { title, author, category };
+                books.push(book);
+                displayBooks();
+                document.getElementById('book-title').value = '';
+                document.getElementById('book-author').value = '';
+                document.getElementById('book-category').value = '';
+            }
+        }
+
+        function displayBooks() {
+            const booksContainer = document.getElementById('books');
+            booksContainer.innerHTML = '';
+            books.forEach((book, index) => {
+                booksContainer.innerHTML += `
+                    <div class="book">
+                        <strong>${book.title}</strong> by ${book.author}
+                        <div class="category">${book.category}</div>
+                        <button onclick="borrowBook(${index})">Borrow</button>
+                    </div>
+                `;
+            });
+        }
+
+        function searchBooks() {
+            const query = document.getElementById('search-query').value.toLowerCase();
+            const filteredBooks = books.filter(book => 
+                book.title.toLowerCase().includes(query) || 
+                book.author.toLowerCase().includes(query) || 
+                book.category.toLowerCase().includes(query)
+            );
+            const booksContainer = document.getElementById('books');
+            booksContainer.innerHTML = '';
+            filteredBooks.forEach((book, index) => {
+                booksContainer.innerHTML += `
+                    <div class="book">
+                        <strong>${book.title}</strong> by ${book.author}
+                        <div class="category">${book.category}</div>
+                        <button onclick="borrowBook(${index})">Borrow</button>
+                    </div>
+                `;
+            });
+        }
+
+        function borrowBook(index) {
+            const book = books[index];
+            const borrowedAt = new Date().toLocaleDateString();
+            const returnedAt = prompt("Enter return date (yyyy-mm-dd):", "");
+
+            if (returnedAt) {
+                history.push({ ...book, borrowedAt, returnedAt });
+                displayHistory();
+            }
+        }
+
+        function displayHistory() {
+            const historyContainer = document.getElementById('history');
+            historyContainer.innerHTML = '';
+            history.forEach(record => {
+                historyContainer.innerHTML += `
+                    <tr>
+                        <td>${record.title}</td>
+                        <td>${record.borrowedAt}</td>
+                        <td>${record.returnedAt}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            displayBooks();
+            displayHistory();
+        });
+    </script>
+</body>
+</html>
